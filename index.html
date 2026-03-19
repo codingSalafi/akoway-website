@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Akoway — Offline Voice Dictation for Windows</title>
+  <meta name="description" content="Dictate text into any Windows app, offline, privately. Powered by OpenAI Whisper. Free and open source." />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="akoway.ico" />
+  <link rel="shortcut icon" href="akoway.ico" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --lime:      #C9FE68;
+      --lime-dark: #a8d94e;
+      --black:     #060900;
+      --dark:      #111311;
+      --card:      #1a1c1a;
+      --border:    #2a2e2a;
+      --text:      #e8ede8;
+      --muted:     #8a9a8a;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--black);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 5%;
+      height: 64px;
+      background: rgba(6, 9, 0, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--lime);
+      text-decoration: none;
+      letter-spacing: -0.5px;
+    }
+
+    .nav-logo img {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      object-fit: contain;
+    }
+
+    .nav-links {
+      display: flex; align-items: center; gap: 2rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+
+    .nav-cta {
+      background: var(--lime);
+      color: var(--black) !important;
+      padding: 0.45rem 1.1rem;
+      border-radius: 8px;
+      font-weight: 700 !important;
+      transition: background 0.2s !important;
+    }
+    .nav-cta:hover { background: var(--lime-dark) !important; }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+      padding: 8rem 5% 5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -200px; left: 50%; transform: translateX(-50%);
+      width: 800px; height: 800px;
+      background: radial-gradient(circle, rgba(201,254,104,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: rgba(201,254,104,0.1);
+      border: 1px solid rgba(201,254,104,0.25);
+      color: var(--lime);
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 0.35rem 1rem;
+      border-radius: 999px;
+      margin-bottom: 2rem;
+      letter-spacing: 0.5px;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.8rem, 7vw, 5.5rem);
+      font-weight: 900;
+      line-height: 1.08;
+      letter-spacing: -2px;
+      max-width: 820px;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero h1 span { color: var(--lime); }
+
+    .hero p {
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      color: var(--muted);
+      max-width: 540px;
+      margin-bottom: 2.5rem;
+    }
+
+    .hero-buttons {
+      display: flex; align-items: center; gap: 1rem;
+      flex-wrap: wrap; justify-content: center;
+    }
+
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: var(--lime);
+      color: var(--black);
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 0.85rem 2rem;
+      border-radius: 12px;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .btn-primary:hover { background: var(--lime-dark); transform: translateY(-1px); }
+
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: transparent;
+      color: var(--text);
+      font-weight: 600;
+      font-size: 1rem;
+      padding: 0.85rem 2rem;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      text-decoration: none;
+      transition: border-color 0.2s, transform 0.15s;
+    }
+    .btn-secondary:hover { border-color: var(--lime); color: var(--lime); transform: translateY(-1px); }
+
+    .hero-note {
+      margin-top: 1.2rem;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    /* ── PILL DEMO ── */
+    .pill-demo {
+      margin-top: 4rem;
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      background: var(--lime);
+      border-radius: 50px;
+      padding: 6px;
+      min-width: 360px;
+      box-shadow: 0 0 60px rgba(201,254,104,0.25), 0 0 120px rgba(201,254,104,0.1);
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .pill-inner {
+      display: flex; align-items: center; gap: 1rem;
+      background: #E0FFA6;
+      border-radius: 44px;
+      padding: 14px 24px;
+      width: 100%;
+    }
+
+    .pill-mic {
+      width: 40px; height: 40px;
+      background: var(--black);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .pill-text {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #1a1a1a;
+      flex: 1;
+    }
+
+    .pill-bars {
+      display: flex; align-items: center; gap: 3px;
+    }
+    .pill-bars span {
+      display: block;
+      width: 3px;
+      background: #1a1a1a;
+      border-radius: 2px;
+      animation: bar 1.2s ease-in-out infinite;
+    }
+    .pill-bars span:nth-child(1) { height: 10px; animation-delay: 0s; }
+    .pill-bars span:nth-child(2) { height: 20px; animation-delay: 0.15s; }
+    .pill-bars span:nth-child(3) { height: 14px; animation-delay: 0.3s; }
+    .pill-bars span:nth-child(4) { height: 22px; animation-delay: 0.45s; }
+    .pill-bars span:nth-child(5) { height: 10px; animation-delay: 0.6s; }
+
+    @keyframes bar {
+      0%, 100% { transform: scaleY(0.4); }
+      50% { transform: scaleY(1); }
+    }
+
+    .pill-close {
+      font-size: 1rem;
+      color: #555;
+      cursor: pointer;
+      padding: 0 4px;
+    }
+
+    /* ── SECTIONS ── */
+    section { padding: 6rem 5%; }
+
+    .section-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--lime);
+      margin-bottom: 1rem;
+    }
+
+    .section-title {
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 800;
+      letter-spacing: -1px;
+      line-height: 1.15;
+      margin-bottom: 1rem;
+    }
+
+    .section-sub {
+      font-size: 1.05rem;
+      color: var(--muted);
+      max-width: 540px;
+    }
+
+    /* ── HOW IT WORKS ── */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+      margin-top: 3.5rem;
+    }
+
+    .step {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      position: relative;
+      transition: border-color 0.2s;
+    }
+    .step:hover { border-color: rgba(201,254,104,0.4); }
+
+    .step-num {
+      width: 36px; height: 36px;
+      background: var(--lime);
+      color: var(--black);
+      font-weight: 800;
+      font-size: 0.9rem;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 1.2rem;
+    }
+
+    .step h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .step p { font-size: 0.9rem; color: var(--muted); }
+
+    /* ── FEATURES GRID ── */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+      margin-top: 3.5rem;
+    }
+
+    .feature {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.8rem;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .feature:hover { border-color: rgba(201,254,104,0.35); transform: translateY(-2px); }
+
+    .feature-icon {
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+    }
+
+    .feature h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+    }
+
+    .feature p { font-size: 0.88rem; color: var(--muted); }
+
+    /* ── OPEN SOURCE BANNER ── */
+    .oss-banner {
+      background: linear-gradient(135deg, rgba(201,254,104,0.08), rgba(201,254,104,0.03));
+      border: 1px solid rgba(201,254,104,0.2);
+      border-radius: 24px;
+      padding: 4rem 3rem;
+      text-align: center;
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .oss-banner .section-title { margin-bottom: 1rem; }
+
+    .oss-banner p {
+      color: var(--muted);
+      font-size: 1rem;
+      margin-bottom: 2rem;
+      max-width: 480px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .oss-badges {
+      display: flex; align-items: center; justify-content: center;
+      gap: 0.75rem; flex-wrap: wrap;
+      margin-bottom: 2rem;
+    }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.4rem 0.9rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    /* ── MODELS TABLE ── */
+    .models-table {
+      width: 100%;
+      max-width: 680px;
+      margin: 3rem auto 0;
+      border-collapse: collapse;
+    }
+
+    .models-table th {
+      text-align: left;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 0.75rem 1.2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .models-table td {
+      padding: 1rem 1.2rem;
+      font-size: 0.92rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .models-table tr:last-child td { border-bottom: none; }
+
+    .recommended {
+      background: rgba(201,254,104,0.06);
+    }
+
+    .tag {
+      display: inline-block;
+      background: var(--lime);
+      color: var(--black);
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.2rem 0.6rem;
+      border-radius: 6px;
+      margin-left: 0.5rem;
+    }
+
+    /* ── CTA ── */
+    .cta-section {
+      text-align: center;
+      padding: 6rem 5%;
+    }
+
+    .cta-section .section-title { margin-bottom: 1rem; }
+    .cta-section p { color: var(--muted); margin-bottom: 2.5rem; }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2.5rem 5%;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 1rem;
+    }
+
+    .footer-logo {
+      font-weight: 800;
+      color: var(--lime);
+      font-size: 1rem;
+    }
+
+    footer p { font-size: 0.82rem; color: var(--muted); }
+
+    footer a { color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    footer a:hover { color: var(--lime); }
+
+    .footer-links { display: flex; gap: 1.5rem; }
+
+    /* ── BUILT BY ── */
+    .built-by {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      margin-top: 2.5rem;
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+
+    .built-by a {
+      color: var(--lime);
+      text-decoration: none;
+      font-weight: 600;
+      transition: opacity 0.2s;
+    }
+    .built-by a:hover { opacity: 0.8; }
+
+    .social-links {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+      justify-content: center;
+    }
+
+    .social-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      color: var(--muted) !important;
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 0.4rem 0.9rem;
+      border-radius: 8px;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .social-link:hover {
+      border-color: var(--lime);
+      color: var(--lime) !important;
+    }
+
+    /* ── SCREENSHOTS ── */
+    .screenshots-section {
+      text-align: center;
+      padding: 5rem 5%;
+      background: var(--dark);
+    }
+
+    .screenshots-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      max-width: 1000px;
+      margin: 3rem auto 0;
+    }
+
+    .screenshot-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .screenshot-card:hover {
+      border-color: rgba(201,254,104,0.4);
+      transform: translateY(-3px);
+    }
+
+    .screenshot-card img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .screenshot-caption {
+      padding: 1rem 1.2rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-align: left;
+    }
+
+    .screenshot-caption span {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 400;
+      margin-top: 0.2rem;
+      color: #5a6a5a;
+    }
+
+    /* ── VIDEO ── */
+    .video-section {
+      text-align: center;
+      padding: 5rem 5%;
+      background: var(--dark);
+    }
+
+    .video-wrapper {
+      position: relative;
+      max-width: 820px;
+      margin: 2.5rem auto 0;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      box-shadow: 0 0 80px rgba(201,254,104,0.1);
+      aspect-ratio: 16 / 9;
+    }
+
+    .video-wrapper iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 640px) {
+      .nav-links { display: none; }
+      .pill-demo { min-width: 280px; }
+      footer { flex-direction: column; text-align: center; }
+      .footer-links { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="#" class="nav-logo">
+      <img src="akoway-logo.png" alt="Akoway logo" />
+      Akoway
+    </a>
+    <ul class="nav-links">
+      <li><a href="#how">How it works</a></li>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#models">Models</a></li>
+      <li><a href="#opensource">Open Source</a></li>
+      <li><a href="https://drive.google.com/file/d/12oYWAIbCW0QVS13ZKNKahKCZc0OZ4MgU/view?usp=sharing" class="nav-cta">⬇ Download</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <img src="akoway-logo.png" alt="Akoway" style="width:72px;height:72px;border-radius:18px;object-fit:contain;margin-bottom:1.5rem;box-shadow:0 0 40px rgba(201,254,104,0.25);" />
+
+    <div class="hero-badge">🎙️ Free &amp; Open Source · Offline · No Subscription</div>
+
+    <h1>Voice dictation for Windows,<br /><span>completely offline.</span></h1>
+
+    <p>Press a hotkey, speak, click to stop — your words appear in any app. Powered by OpenAI Whisper. Your audio never leaves your device.</p>
+
+    <div class="hero-buttons">
+      <a href="https://drive.google.com/file/d/12oYWAIbCW0QVS13ZKNKahKCZc0OZ4MgU/view?usp=sharing" class="btn-primary">
+        ⬇ Download for Windows
+      </a>
+      <a href="https://github.com/codingSalafi/Akoway" class="btn-secondary" target="_blank" rel="noopener">
+        ★ View on GitHub
+      </a>
+    </div>
+
+    <p class="hero-note">Windows 10 / 11 · Free forever · ~177 MB</p>
+
+    <!-- Animated pill demo -->
+    <div class="pill-demo">
+      <div class="pill-inner">
+        <div class="pill-mic">🎙️</div>
+        <div class="pill-text">Listening…</div>
+        <div class="pill-bars">
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <div class="pill-close">✕</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIDEO (uncomment when YouTube video is ready)
+  <section class="video-section">
+    <div class="section-label">See it in action</div>
+    <h2 class="section-title">Watch the demo</h2>
+    <p class="section-sub" style="margin: 0.5rem auto 0;">See how Akoway works in real time — from install to dictation in under 2 minutes.</p>
+
+    <div class="video-wrapper">
+      <iframe
+        src="https://www.youtube.com/embed/YOUR_YOUTUBE_VIDEO_ID"
+        title="Akoway — Offline Voice Dictation Demo"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen>
+      </iframe>
+    </div>
+  </section>
+  -->
+
+  <!-- SCREENSHOTS -->
+  <section class="screenshots-section">
+    <div class="section-label">Screenshots</div>
+    <h2 class="section-title">See what it looks like</h2>
+    <p class="section-sub" style="margin: 0.5rem auto 0;">A minimal overlay that stays out of your way — and a tray icon always within reach.</p>
+
+    <div class="screenshots-grid">
+      <div class="screenshot-card">
+        <img src="screenshots/overlay-idle.png" alt="Akoway overlay in idle state" />
+        <div class="screenshot-caption">
+          Overlay — Ready
+          <span>Press the mic to start dictating</span>
+        </div>
+      </div>
+      <div class="screenshot-card">
+        <img src="screenshots/overlay-listening.png" alt="Akoway overlay listening" />
+        <div class="screenshot-caption">
+          Overlay — Listening
+          <span>Speak naturally, click mic to stop</span>
+        </div>
+      </div>
+      <div class="screenshot-card">
+        <img src="screenshots/tray.png" alt="Akoway system tray" />
+        <div class="screenshot-caption">
+          System Tray
+          <span>Right-click for quick actions, double-click for settings</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section id="how">
+    <div class="section-label">How it works</div>
+    <h2 class="section-title">Three steps to dictate anything</h2>
+    <p class="section-sub">No setup, no account, no internet after the first model download.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h3>Install &amp; download a model</h3>
+        <p>Run the installer. On first launch, pick a Whisper model size that suits your needs — it downloads in minutes.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h3>Press the hotkey</h3>
+        <p>Hit <strong>Ctrl+Alt+Space</strong> from anywhere in Windows. The floating overlay appears at the top of your screen.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h3>Speak, then click to insert</h3>
+        <p>Click the mic to start, speak naturally, click again to stop. Your text is inserted exactly where your cursor was.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <h3>Works in any app</h3>
+        <p>VS Code, Notion, Word, Chrome, WhatsApp Web — anywhere you can type, Akoway can dictate.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features" style="background: var(--dark);">
+    <div class="section-label">Features</div>
+    <h2 class="section-title">Everything you need, nothing you don't</h2>
+
+    <div class="features">
+      <div class="feature">
+        <div class="feature-icon">🔒</div>
+        <h3>Fully Offline &amp; Private</h3>
+        <p>Audio is processed entirely on your machine. No cloud, no servers, no data collection — ever.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">⚡</div>
+        <h3>Works in Any App</h3>
+        <p>Dictate into any Windows application — browsers, editors, messaging apps, IDEs, everything.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🪟</div>
+        <h3>Minimal Floating Overlay</h3>
+        <p>A small pill UI floats above your windows. Drag it anywhere, close it when done.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">⌨️</div>
+        <h3>Customisable Hotkey</h3>
+        <p>Default is Ctrl+Alt+Space. Change it to whatever feels natural for your workflow.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🤖</div>
+        <h3>OpenAI Whisper Accuracy</h3>
+        <p>State-of-the-art transcription quality — the same model that powers leading voice tools.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🚀</div>
+        <h3>GPU Accelerated</h3>
+        <p>Supports CUDA for fast transcription on NVIDIA GPUs. Falls back to CPU automatically.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🔧</div>
+        <h3>Configurable</h3>
+        <p>Choose your model, injection method, hotkey, startup behaviour — all from a clean settings panel.</p>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">💰</div>
+        <h3>Free Forever</h3>
+        <p>No subscription, no trial, no premium tier. Free today, free always.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- MODELS -->
+  <section id="models">
+    <div style="text-align: center;">
+      <div class="section-label">Whisper Models</div>
+      <h2 class="section-title">Choose your speed vs accuracy</h2>
+      <p class="section-sub" style="margin: 0 auto 0;">Downloaded on first launch — nothing bundled in the installer.</p>
+    </div>
+
+    <table class="models-table">
+      <thead>
+        <tr>
+          <th>Model</th>
+          <th>Size</th>
+          <th>Speed</th>
+          <th>Accuracy</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>base.en</td>
+          <td>142 MB</td>
+          <td>Fastest</td>
+          <td>Good</td>
+        </tr>
+        <tr class="recommended">
+          <td>small.en <span class="tag">Recommended</span></td>
+          <td>244 MB</td>
+          <td>Balanced</td>
+          <td>Better</td>
+        </tr>
+        <tr>
+          <td>medium.en</td>
+          <td>769 MB</td>
+          <td>Slower</td>
+          <td>Best</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- OPEN SOURCE -->
+  <section id="opensource" style="background: var(--dark);">
+    <div class="oss-banner">
+      <div class="section-label" style="text-align:center;">Open Source</div>
+      <h2 class="section-title">Built in the open, for everyone</h2>
+      <p>Akoway is MIT-licensed and fully open source. Read the code, contribute improvements, or fork it to build your own version — including a Mac or Linux port.</p>
+
+      <div class="oss-badges">
+        <div class="badge">📄 MIT Licence</div>
+        <div class="badge">⭐ Free Forever</div>
+        <div class="badge">🔀 Fork &amp; Contribute</div>
+        <div class="badge">🛠 .NET 8 · WPF · Whisper.net</div>
+      </div>
+
+      <a href="https://github.com/codingSalafi/Akoway" class="btn-secondary" target="_blank" rel="noopener" style="display:inline-flex;">
+        ★ View Source on GitHub
+      </a>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="section-label">Get started</div>
+    <h2 class="section-title">Ready to ditch the keyboard?</h2>
+    <p>Download Akoway for free. No account needed.</p>
+
+    <div class="hero-buttons">
+      <a href="https://drive.google.com/file/d/12oYWAIbCW0QVS13ZKNKahKCZc0OZ4MgU/view?usp=sharing" class="btn-primary">⬇ Download for Windows</a>
+      <a href="https://github.com/codingSalafi/Akoway" class="btn-secondary" target="_blank" rel="noopener">★ GitHub</a>
+    </div>
+
+    <p class="hero-note" style="margin-top:1rem;">Windows 10 / 11 · 64-bit · Free forever</p>
+
+    <div class="built-by">
+      Built with ❤️ by <a href="https://x.com/codingSalafi" target="_blank" rel="noopener">@codingSalafi</a>
+    </div>
+
+    <div class="social-links">
+      <a href="https://x.com/codingSalafi" class="social-link" target="_blank" rel="noopener">
+        𝕏 Twitter
+      </a>
+      <a href="https://www.youtube.com/@createwithcodingSalafi" class="social-link" target="_blank" rel="noopener">
+        ▶ YouTube
+      </a>
+      <a href="https://github.com/codingSalafi" class="social-link" target="_blank" rel="noopener">
+        ★ GitHub
+      </a>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <span class="footer-logo">Akoway</span>
+    <div class="footer-links">
+      <a href="https://github.com/codingSalafi/Akoway/issues" target="_blank" rel="noopener">Report a Bug</a>
+    </div>
+  </footer>
+
+</body>
+</html>
