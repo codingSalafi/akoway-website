@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Akoway — Offline Voice Dictation for Windows</title>
-  <meta name="description" content="Dictate text into any Windows app, offline, privately. Powered by OpenAI Whisper. Free and open source." />
+  <meta name="description" content="Dictate text into any Windows app, offline, privately. Powered by Underdog Bark 3.0 Pro. Free and open source." />
 
   <!-- Favicon -->
   <link rel="icon" type="image/x-icon" href="akoway.ico" />
@@ -600,8 +600,7 @@
       <li><a href="#features">Features</a></li>
       <li><a href="#models">Models</a></li>
       <li><a href="#opensource">Open Source</a></li>
-      <li><a href="https://drive.usercontent.google.com/download?id=12oYWAIbCW0QVS13ZKNKahKCZc0OZ4MgU&export=download&authuser=0&confirm=t&uuid=d2706d2e-0936-4b89-8f34-9dafc6581982&at=AGN2oQ0B1Hp_jfjyE4mLJ1U0St0E%3A1773910241734
-" class="nav-cta">⬇ Download</a></li>
+      <li><a href="https://github.com/codingSalafi/Akoway/releases/latest/download/Akoway-Setup.exe" class="nav-cta">⬇ Download</a></li>
     </ul>
   </nav>
 
@@ -613,11 +612,10 @@
 
     <h1>Voice dictation for Windows,<br /><span>completely offline.</span></h1>
 
-    <p>Press a hotkey, speak, click to stop — your words appear in any app. Powered by OpenAI Whisper. Your audio never leaves your device.</p>
+    <p>Press a hotkey, speak, click to stop — your words appear in any app. Powered by Underdog Bark 3.0 Pro. Your audio never leaves your device.</p>
 
     <div class="hero-buttons">
-      <a href="https://drive.usercontent.google.com/download?id=12oYWAIbCW0QVS13ZKNKahKCZc0OZ4MgU&export=download&authuser=0&confirm=t&uuid=d2706d2e-0936-4b89-8f34-9dafc6581982&at=AGN2oQ0B1Hp_jfjyE4mLJ1U0St0E%3A1773910241734
-" class="btn-primary">
+      <a href="https://github.com/codingSalafi/Akoway/releases/latest/download/Akoway-Setup.exe" class="btn-primary">
         ⬇ Download for Windows
       </a>
       <a href="https://github.com/codingSalafi/Akoway" class="btn-secondary" target="_blank" rel="noopener">
@@ -625,7 +623,7 @@
       </a>
     </div>
 
-    <p class="hero-note">Windows 10 / 11 · Free forever · ~177 MB</p>
+    <p class="hero-note">Windows 10 / 11 · Free forever · ~55 MB</p>
 
     <!-- Animated pill demo -->
     <div class="pill-demo">
@@ -697,13 +695,13 @@
     <div class="steps">
       <div class="step">
         <div class="step-num">1</div>
-        <h3>Install &amp; download a model</h3>
-        <p>Run the installer. On first launch, pick a Whisper model size that suits your needs — it downloads in minutes.</p>
+        <h3>Install &amp; download the model</h3>
+        <p>Run the installer. On first launch, Akoway downloads its speech model (about 910 MB) — once, in a few minutes.</p>
       </div>
       <div class="step">
         <div class="step-num">2</div>
         <h3>Press the hotkey</h3>
-        <p>Hit <strong>Ctrl+Alt+Space</strong> from anywhere in Windows. The floating overlay appears at the top of your screen.</p>
+        <p>Hit <strong>Ctrl+Alt+F9</strong> from anywhere in Windows. The floating overlay appears at the top of your screen.</p>
       </div>
       <div class="step">
         <div class="step-num">3</div>
@@ -742,22 +740,22 @@
       <div class="feature">
         <div class="feature-icon">⌨️</div>
         <h3>Customisable Hotkey</h3>
-        <p>Default is Ctrl+Alt+Space. Change it to whatever feels natural for your workflow.</p>
+        <p>Default is Ctrl+Alt+F9. Change it to whatever feels natural for your workflow.</p>
       </div>
       <div class="feature">
         <div class="feature-icon">🤖</div>
-        <h3>OpenAI Whisper Accuracy</h3>
-        <p>State-of-the-art transcription quality — the same model that powers leading voice tools.</p>
+        <h3>Bark 3.0 Pro Accuracy</h3>
+        <p>One of the most accurate open speech models available, with punctuation and capitals added for you.</p>
       </div>
       <div class="feature">
         <div class="feature-icon">🚀</div>
-        <h3>GPU Accelerated</h3>
-        <p>Supports CUDA for fast transcription on NVIDIA GPUs. Falls back to CPU automatically.</p>
+        <h3>Fast on Any CPU</h3>
+        <p>About 0.6 seconds to transcribe 10 seconds of speech on a laptop CPU. No GPU or drivers needed.</p>
       </div>
       <div class="feature">
         <div class="feature-icon">🔧</div>
         <h3>Configurable</h3>
-        <p>Choose your model, injection method, hotkey, startup behaviour — all from a clean settings panel.</p>
+        <p>Choose your hotkey, injection method and startup behaviour — all from a clean settings panel.</p>
       </div>
       <div class="feature">
         <div class="feature-icon">💰</div>
@@ -770,8 +768,8 @@
   <!-- MODELS -->
   <section id="models">
     <div style="text-align: center;">
-      <div class="section-label">Whisper Models</div>
-      <h2 class="section-title">Choose your speed vs accuracy</h2>
+      <div class="section-label">Speech Model</div>
+      <h2 class="section-title">One accurate model, no choices to make</h2>
       <p class="section-sub" style="margin: 0 auto 0;">Downloaded on first launch — nothing bundled in the installer.</p>
     </div>
 
@@ -780,28 +778,16 @@
         <tr>
           <th>Model</th>
           <th>Size</th>
-          <th>Speed</th>
-          <th>Accuracy</th>
+          <th>Speed (CPU)</th>
+          <th>Notes</th>
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td>base.en</td>
-          <td>142 MB</td>
-          <td>Fastest</td>
-          <td>Good</td>
-        </tr>
         <tr class="recommended">
-          <td>small.en <span class="tag">Recommended</span></td>
-          <td>244 MB</td>
-          <td>Balanced</td>
-          <td>Better</td>
-        </tr>
-        <tr>
-          <td>medium.en</td>
-          <td>769 MB</td>
-          <td>Slower</td>
-          <td>Best</td>
+          <td><a href="https://huggingface.co/ConwayResearch/Underdog-Bark-3.0-Pro" target="_blank" rel="noopener" style="color:inherit;">Bark 3.0 Pro</a> <span class="tag">by Underdog</span></td>
+          <td style="white-space:nowrap;">910 MB</td>
+          <td>~15× faster than real time</td>
+          <td>English, with punctuation &amp; capitals</td>
         </tr>
       </tbody>
     </table>
@@ -818,7 +804,7 @@
         <div class="badge">📄 MIT Licence</div>
         <div class="badge">⭐ Free Forever</div>
         <div class="badge">🔀 Fork &amp; Contribute</div>
-        <div class="badge">🛠 .NET 8 · WPF · Whisper.net</div>
+        <div class="badge">🛠 .NET 8 · WPF · ONNX Runtime</div>
       </div>
 
       <a href="https://github.com/codingSalafi/Akoway" class="btn-secondary" target="_blank" rel="noopener" style="display:inline-flex;">
@@ -834,8 +820,7 @@
     <p>Download Akoway for free. No account needed.</p>
 
     <div class="hero-buttons">
-      <a href="https://drive.usercontent.google.com/download?id=12oYWAIbCW0QVS13ZKNKahKCZc0OZ4MgU&export=download&authuser=0&confirm=t&uuid=d2706d2e-0936-4b89-8f34-9dafc6581982&at=AGN2oQ0B1Hp_jfjyE4mLJ1U0St0E%3A1773910241734
-" class="btn-primary">⬇ Download for Windows</a>
+      <a href="https://github.com/codingSalafi/Akoway/releases/latest/download/Akoway-Setup.exe" class="btn-primary">⬇ Download for Windows</a>
       <a href="https://github.com/codingSalafi/Akoway" class="btn-secondary" target="_blank" rel="noopener">★ GitHub</a>
     </div>
 
