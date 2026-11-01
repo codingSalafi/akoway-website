@@ -262,6 +262,7 @@
     footer .wrap { display: flex; flex-wrap: wrap; gap: 18px 30px; align-items: center; justify-content: space-between; }
     footer nav { display: flex; flex-wrap: wrap; gap: 20px; }
     footer a:hover { color: var(--text); }
+    footer .analytics-note { flex-basis: 100%; font-size: .8rem; opacity: .75; }
 
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation: none !important; transition: none !important; }
@@ -467,7 +468,7 @@
         <div class="faq">
           <details class="reveal"><summary>Is it really free?</summary><p>Yes. No subscription, no trial, no premium tier. Akoway is MIT-licensed open source, and the speech models are open too.</p></details>
           <details class="reveal"><summary>Does it need the internet?</summary><p>Only once, to download the speech model the first time you open it. After that it works fully offline, even in airplane mode.</p></details>
-          <details class="reveal"><summary>Is my voice uploaded anywhere?</summary><p>Never. Your audio is turned into text on your own device and then thrown away. There's no account and no analytics.</p></details>
+          <details class="reveal"><summary>Is my voice uploaded anywhere?</summary><p>Never. Your audio is turned into text on your own device and then thrown away. The apps have no account and no analytics. (This website counts visits anonymously, without cookies, so we know what people find useful.)</p></details>
           <details class="reveal"><summary>How do I start it on Windows?</summary><p>Double-tap <span class="kbd">Ctrl</span> from any app and the Akoway pill appears; click the mic and talk. You can also use <span class="kbd">Ctrl</span> + <span class="kbd">Alt</span> + <span class="kbd">F9</span>, or set your own shortcut in Settings. Akoway just needs to be running: it sits quietly in the system tray, and the installer can start it with Windows so it's always ready.</p></details>
           <details class="reveal"><summary>How do I install the Android app?</summary><p>Download the APK on your phone, open it, and allow installs from your browser when Android asks. Then open Akoway and follow the three setup steps. The optional floating tab uses Accessibility; if it's greyed out, open Settings › Apps › Akoway › ⋮ › Allow restricted settings.</p></details>
           <details class="reveal"><summary>Which languages does it support?</summary><p>English for now. Bark 3.0 is an English speech model.</p></details>
@@ -503,10 +504,68 @@
         <a href="https://www.youtube.com/@createwithcodingSalafi" target="_blank" rel="noopener">YouTube</a>
       </nav>
       <span>Built by <a href="https://github.com/codingSalafi" target="_blank" rel="noopener">@codingSalafi</a> · Speech by Underdog Bark 3.0</span>
+      <span class="analytics-note">This website uses anonymous, cookie-free analytics (PostHog). The Akoway apps don't track anything.</span>
     </div>
   </footer>
 
   <script>
+  /* Analytics: PostHog (US cloud), cookie-free and anonymous. Website only; the apps never track. */
+  const POSTHOG_KEY = "";   // Akoway project key (phc_…); tracking stays off while this is empty
+  if (POSTHOG_KEY.startsWith("phc_")) {
+    !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset identify alias set_config get_distinct_id get_property".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+    posthog.init(POSTHOG_KEY, {
+      api_host: "https://us.i.posthog.com",
+      persistence: "memory",          // no cookies, nothing stored on the visitor's device
+      person_profiles: "identified_only",
+      capture_pageview: true,
+      capture_pageleave: true,
+      autocapture: true,
+      disable_session_recording: true,
+    });
+    posthog.register({ site: "akoway-website" });
+  }
+  window.track = function (event, props) { try { if (window.posthog && window.posthog.capture) window.posthog.capture(event, props || {}); } catch (e) {} };
+
+  (function () {
+    /* What we count: download clicks (which platform, which button), the film, how far people
+       scroll, the um switch, FAQ questions opened, and links out to GitHub / Hugging Face / socials. */
+    const sectionOf = (el) => (el.closest("header") ? "nav" : (el.closest("section[id], main > section")?.id || "page"));
+    document.addEventListener("click", (e) => {
+      const a = e.target.closest("a"); if (!a) return;
+      const href = a.getAttribute("href") || "";
+      if (a.classList.contains("dl-win") || a.classList.contains("dl-and")) {
+        track("download_click", { platform: a.classList.contains("dl-win") ? "windows" : "android", location: sectionOf(a) === "top" ? "hero" : sectionOf(a) });
+      } else if (href === "#download") {
+        track("download_menu_click", { location: sectionOf(a) });
+      } else if (/^https?:/.test(href)) {
+        let host = ""; try { host = new URL(href).hostname; } catch (_) {}
+        track("outbound_click", { url: href, host: host, location: sectionOf(a) });
+      }
+    });
+    const film = document.querySelector("#watch video");
+    if (film) {
+      const marks = new Set();
+      film.addEventListener("play", () => track("video_play", { position: Math.round(film.currentTime) }));
+      film.addEventListener("ended", () => track("video_complete"));
+      film.addEventListener("timeupdate", () => {
+        if (!film.duration) return;
+        const pct = Math.floor((film.currentTime / film.duration) * 4) * 25;
+        if (pct > 0 && pct < 100 && !marks.has(pct)) { marks.add(pct); track("video_progress", { percent: pct }); }
+      });
+    }
+    const seen = new Set();
+    const so = new IntersectionObserver((es) => es.forEach((en) => {
+      const id = en.target.id || "hero";
+      if (en.isIntersecting && !seen.has(id)) { seen.add(id); track("section_viewed", { section: id }); }
+    }), { threshold: 0.35 });
+    document.querySelectorAll("main > section").forEach((sec) => so.observe(sec));
+    const tg = document.getElementById("clean-toggle");
+    if (tg) tg.addEventListener("change", () => track("clean_toggle", { showing: tg.checked ? "akoway_wrote" : "you_said" }));
+    document.querySelectorAll(".faq details").forEach((d) => d.addEventListener("toggle", () => {
+      if (d.open) track("faq_open", { question: d.querySelector("summary").textContent.trim() });
+    }));
+  })();
+
   (function () {
     document.documentElement.classList.add("js");
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
